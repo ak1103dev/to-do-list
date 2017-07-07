@@ -71,7 +71,7 @@ export default class Error extends Component {
         </div>
         <div className="list">
           {
-            list.length === 0 &&
+            list.filter((item) => item.status === showedStatus).length === 0 &&
             <div>=== no list ===</div>
           }
           {list.map((item, i) => {
