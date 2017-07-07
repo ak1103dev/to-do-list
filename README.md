@@ -1,5 +1,9 @@
 # to-do-list
 
+## Prepare
+
+`$ npm install`
+
 ## Hot command
 
 development
