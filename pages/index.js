@@ -8,6 +8,7 @@ export default class Error extends Component {
       currText: '',
       list: [],
       checkList: [], // { text, status }
+      showedStatus: 'unachieved',
     };
   }
 
@@ -54,7 +55,7 @@ export default class Error extends Component {
   }
 
   render () {
-    const { list, currText } = this.state;
+    const { list, currText, showedStatus } = this.state;
     console.log(this.state);
     return (
       <div className="container">
@@ -63,13 +64,18 @@ export default class Error extends Component {
           <input value={currText} onChange={(event) => this.setState({ currText: event.target.value })} />
           <button onClick={this.add}>Add</button>
         </div>
+        <h3>filter</h3>
+        <div className="filter">
+          <button onClick={() => this.setState({ showedStatus: 'unachieved' })}>unachieved</button>
+          <button onClick={() => this.setState({ showedStatus: 'achieved' })}>achieved</button>
+        </div>
         <div className="list">
           {
             list.length === 0 &&
             <div>=== no list ===</div>
           }
           {list.map((item, i) => {
-            if (item.status === 'unachieved') {
+            if (item.status === showedStatus) {
               return (
                 <div key={i} className="listCard">
                   <input type="checkbox" onChange={(event) => this.check(event, i)} /> {item.text}
@@ -97,6 +103,9 @@ export default class Error extends Component {
             }
           }
           .input {
+            margin-bottom: 10px;
+          }
+          .filter {
             margin-bottom: 10px;
           }
           .list {
