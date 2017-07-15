@@ -128,7 +128,10 @@ class Home extends Component {
           })}
         </div>
         <div>
-          <button onClick={this.achieve}>Achieve</button>
+          {
+            this.state.showedStatus === 'unachieved' &&
+            <button onClick={this.achieve}>Achieve</button>
+          }
           <button onClick={this.delete}>Delete</button>
         </div>
         <style jsx>{`
