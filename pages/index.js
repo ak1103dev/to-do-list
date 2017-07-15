@@ -1,93 +1,61 @@
-import React, { Component } from 'react'
-import _ from 'lodash';
+import React, { Component } from 'react';
+import Router from 'next/router';
+import request from 'superagent';
+import config from '../config';
 
-export default class Error extends Component {
+class Login extends Component {
   constructor() {
     super();
     this.state = {
-      currText: '',
-      list: [],
-      checkList: [], // { text, status }
-      showedStatus: 'unachieved',
+      username: '',
+      password: '',
     };
   }
-
-  add = () => {
-    const { currText } = this.state;
-    const list = _.cloneDeep(this.state.list);
-    if (!_.isEmpty(currText)) {
-      list.push({ text: currText, status: 'unachieved' })
-      this.setState({ list, currText: '' });
-    }
+  onLogin = () => {
+    const { username, password } = this.state;
+    return request.post(`${config.apiHost}/users/login`)
+      .send({ username, password })
+      .end((err, res) => {
+        if (err) {
+          console.error(err);
+          return alert('Error !!!');
+        }
+        console.log(res.body);
+        const { accessToken } = res.body;
+        localStorage.setItem('accessToken', accessToken);
+        return Router.push('/home');
+      });
   }
-  achieve = () => {
-    const { checkList } = this.state;
-    const list = _.cloneDeep(this.state.list);
-    checkList.map((index) =>
-      list[index] = {
-        text: list[index].text,
-        status: 'achieved',
-      }
-    );
-    this.setState({ list, checkList: [] });
-  }
-  delete = () => {
-    const { checkList } = this.state;
-    const list = _.cloneDeep(this.state.list);
-    checkList.map((index) =>
-      list[index] = {
-        text: list[index].text,
-        status: 'deleted',
-      }
-    );
-    this.setState({ list, checkList: [] });
-  }
-  check = (event, i) => {
-    const isCheck = event.target.checked;
-    // const hasIndex = _.includes(this.state.checkList, i);
-    if (isCheck) {
-      this.setState({ checkList: [...this.state.checkList, i]});
-    } else {
-      const checkList = _.cloneDeep(this.state.checkList);
-      _.remove(checkList, (item) => item === i);
-      this.setState({ checkList });
-    }
+  onRegister = () => {
+    const { username, password } = this.state;
+    return request.post(`${config.apiHost}/users`)
+      .send({ username, password })
+      .end((err, res) => {
+        if (err) {
+          console.error(err);
+          return alert('Error !!!');
+        }
+        return this.onLogin();
+      });
   }
 
-  render () {
-    const { list, currText, showedStatus } = this.state;
-    console.log(this.state);
+  render() {
     return (
       <div className="container">
-        <h1>To Do List</h1>
-        <div className="input">
-          <input value={currText} onChange={(event) => this.setState({ currText: event.target.value })} />
-          <button onClick={this.add}>Add</button>
-        </div>
-        <h3>filter</h3>
-        <div className="filter">
-          <button onClick={() => this.setState({ showedStatus: 'unachieved' })}>unachieved</button>
-          <button onClick={() => this.setState({ showedStatus: 'achieved' })}>achieved</button>
-        </div>
-        <div className="list">
-          {
-            list.filter((item) => item.status === showedStatus).length === 0 &&
-            <div>=== no list ===</div>
-          }
-          {list.map((item, i) => {
-            if (item.status === showedStatus) {
-              return (
-                <div key={i} className="listCard">
-                  <input type="checkbox" onChange={(event) => this.check(event, i)} /> {item.text}
-                </div>
-              );
-            }
-            return null;
-          })}
-        </div>
-        <div>
-          <button onClick={this.achieve}>Achieve</button>
-          <button onClick={this.delete}>Delete</button>
+        <h1>Login / Register</h1>
+        <div className="box">
+          <div>
+            <label>Username:</label><br />
+            <input className="input" onChange={(event) => this.setState({ username: event.target.value })} />
+          </div>
+          <div>
+            <label>Password:</label><br />
+            <input type="password" className="input" onChange={(event) => this.setState({ password: event.target.value })} />
+          </div>
+          <div className="btnG">
+            <button className="login" onClick={this.onLogin}>Login</button>
+            <button className="register" onClick={this.onRegister}>Register</button>
+          </div>
         </div>
         <style jsx>{`
           .container {
@@ -102,21 +70,35 @@ export default class Error extends Component {
               margin-right: 100px;
             }
           }
-          .input {
+          .box {
+            text-align: left;
+          }
+          .box .input {
+            width: 100%;
             margin-bottom: 10px;
           }
-          .filter {
-            margin-bottom: 10px;
+          .btnG {
+            width: 100%;
           }
-          .list {
-            margin-bottom: 10px;
+          .btnG >button {
+            width: calc(50% - 5px);
           }
-          .listCard {
-            border: 1px solid gray;
-            padding: 5px;
+          .btnG .login {
+            margin-right: 5px;
+          }
+          .btnG .register {
+            margin-left: 5px;
           }
         `}</style>
       </div>
     );
   }
 }
+
+// Login.getInitialProps = async ({ req }) => {
+//   const res = await fetch('https://api.github.com/repos/zeit/next.js')
+//   const json = await res.json()
+//   return { stars: json.stargazers_count }
+// }
+
+export default Login;
