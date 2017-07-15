@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import _ from 'lodash';
+import request from 'superagent';
+import config from '../config';
 
-export default class Home extends Component {
+class Home extends Component {
   constructor() {
     super();
     this.state = {
@@ -11,13 +13,38 @@ export default class Home extends Component {
       showedStatus: 'unachieved',
     };
   }
+  componentDidMount() {
+    this.getList();
+  }
+
+  getList = () => {
+    request(`${config.apiHost}/tasks`)
+      .set('X-Access-Token', localStorage.getItem('accessToken'))
+      .end((err, res) => {
+        if (err) {
+          console.error(err);
+          return alert('Error !!!');
+        }
+        return this.setState({ list: res.body, currText: '', checkList: [] });
+      });
+  }
 
   add = () => {
     const { currText } = this.state;
     const list = _.cloneDeep(this.state.list);
     if (!_.isEmpty(currText)) {
-      list.push({ text: currText, status: 'unachieved' })
-      this.setState({ list, currText: '' });
+      const data = { text: currText, status: 'unachieved' };
+      list.push(data);
+      request.post(`${config.apiHost}/tasks`)
+        .send(data)
+        .set('X-Access-Token', localStorage.getItem('accessToken'))
+        .end((err, res) => {
+          if (err) {
+            console.error(err);
+            return alert('Error !!!');
+          }
+          return this.getList();
+        });
     }
   }
   achieve = () => {
@@ -56,6 +83,7 @@ export default class Home extends Component {
 
   render () {
     const { list, currText, showedStatus } = this.state;
+    // const { list } = this.props;
     console.log(this.state);
     return (
       <div className="container">
@@ -120,3 +148,5 @@ export default class Home extends Component {
     );
   }
 }
+
+export default Home;
