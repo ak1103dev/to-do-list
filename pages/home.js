@@ -48,26 +48,40 @@ class Home extends Component {
     }
   }
   achieve = () => {
-    const { checkList } = this.state;
-    const list = _.cloneDeep(this.state.list);
-    checkList.map((index) =>
-      list[index] = {
-        text: list[index].text,
-        status: 'achieved',
-      }
-    );
-    this.setState({ list, checkList: [] });
+    const { checkList, list } = this.state;
+    const promise = checkList.map((id) => {
+      const data = list.find((item) => item._id === id);
+      data.status = 'achieved';
+      data._id = undefined;
+      request.put(`${config.apiHost}/tasks/${id}`)
+        .send(data)
+        .set('X-Access-Token', localStorage.getItem('accessToken'))
+        .end((err, res) => {
+          if (err) {
+            console.error(err);
+            return alert('Error !!!');
+          }
+          return this.getList();
+        });
+    })
   }
   delete = () => {
-    const { checkList } = this.state;
-    const list = _.cloneDeep(this.state.list);
-    checkList.map((index) =>
-      list[index] = {
-        text: list[index].text,
-        status: 'deleted',
-      }
-    );
-    this.setState({ list, checkList: [] });
+    const { checkList, list } = this.state;
+    const promise = checkList.map((id) => {
+      const data = list.find((item) => item._id === id);
+      data.status = 'deleted';
+      data._id = undefined;
+      request.put(`${config.apiHost}/tasks/${id}`)
+        .send(data)
+        .set('X-Access-Token', localStorage.getItem('accessToken'))
+        .end((err, res) => {
+          if (err) {
+            console.error(err);
+            return alert('Error !!!');
+          }
+          return this.getList();
+        });
+    });
   }
   check = (event, i) => {
     const isCheck = event.target.checked;
@@ -106,7 +120,7 @@ class Home extends Component {
             if (item.status === showedStatus) {
               return (
                 <div key={i} className="listCard">
-                  <input type="checkbox" onChange={(event) => this.check(event, i)} /> {item.text}
+                  <input type="checkbox" onChange={(event) => this.check(event, item._id)} /> {item.text}
                 </div>
               );
             }
